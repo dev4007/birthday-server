@@ -1,4 +1,0 @@
-// controllers/sendWishController.js
-
-
-

@@ -22,7 +22,8 @@ const sendWishSchema = new mongoose.Schema({
   address: { type: String, required: true },
   phoneNumber: { type: String, required: true },
   email: { type: String, required: true },
-  birthdayCallDateTime: { type: Date, required: true },
+  birthdayCallDate: { type: Date, required: true }, // Separate field for birthday call date
+  birthdayCallTime: { type: String, required: true }, // Separate field for birthday call time
   favoriteCharacter: [{ type: String, enum: characters, required: true }],
   specialMessage: { type: String },
   uploadedPhoto: { type: String }, // Assuming you store the URL of the uploaded photo

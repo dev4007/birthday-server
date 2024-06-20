@@ -28,6 +28,7 @@ const artistSchema = new mongoose.Schema({
   moreInformation: { type: String },
   specialtyForVoiceMessage: [{ type: String, enum: specialty, required: true }],
   charactersForVoiceOver: [{ type: String, enum: characters, required: true }],
+   suspended: { type: Boolean, default: false }, // Defaults to false (not suspended)
 });
 
 export default User.discriminator("Artist", artistSchema);

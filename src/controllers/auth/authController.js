@@ -114,6 +114,10 @@ export const Login = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
+      // Check if user is suspended
+      if (user.suspended) {
+        return res.status(403).json({ msg: "Your account is suspended. Please contact support for assistance." });
+      }
     // Check if password matches
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
@@ -124,7 +128,7 @@ export const Login = async (req, res) => {
       { id: user.id, email: user.email },
       process.env.JWT_SECRET,
       {
-        expiresIn: "20s", // Short-lived access token
+        expiresIn: "20m", // Short-lived access token
       }
     );
 
@@ -166,7 +170,7 @@ export const RefreshToken = (req, res) => {
       { id: decoded.id, email: decoded.email },
       process.env.JWT_SECRET,
       {
-        expiresIn: "30s",
+        expiresIn: "30m",
       }
     );
     res.status(200).json({ accessToken });

@@ -4,6 +4,11 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import router from "./src/routes/auth/routes.js";
 import customerRouter from "./src/routes/customer/routes.js";
+import artistRouter from "./src/routes/artist/routes.js";
+import adminRouter from "./src/routes/admin/routes.js";
+
+
+
 
 import dotenv from "dotenv";
 import connectDB from "./src/config/db.js"
@@ -21,9 +26,9 @@ app.use(bodyParser.json());
 
 // auth routes
 app.use("/api/auth", router);
+app.use("/api/admin", adminRouter);
 app.use("/api/customer", customerRouter);
-app.use("/api/invitation", customerRouter);
-
+app.use("/api/artist", artistRouter);
 
 
 app.listen(port, () => {

@@ -7,6 +7,7 @@ import User from "../../models/auth/authModel.js";
 import cloudinaryUploader from "../../utils/cloudinaryUpload.js";
 import upload from "../../utils/uploadAudio.js";
 import multer from "multer";
+import SendWish from "../../models/customer/SendWishes.js";
 
 export const createSchedule = async (req, res) => {
   try {
@@ -20,7 +21,10 @@ export const createSchedule = async (req, res) => {
 
     // Ensure voiceArtistName and customer are valid ObjectIds
     const artist = await Artist.findOne({ email: voiceArtist });
-    const customerDoc = await Customer.findOne({ email: customer });
+    // const customerDoc = await Customer.findOne({ email: customer });
+    const wish = await SendWish.findOne({ email: birthdayWishesName });
+    const customerDoc = await Customer.findOne(wish.wishCreatedBy);
+
     if (!artist) {
       return res.status(400).json({ message: "Invalid artist" });
     }
@@ -30,7 +34,7 @@ export const createSchedule = async (req, res) => {
     }
 
     const newSchedule = new Schedule({
-      birthdayWishesName,
+      birthdayWishesName: wish,
       voiceArtist: artist,
       customer: customerDoc,
       dateAndTime,
@@ -47,12 +51,51 @@ export const createSchedule = async (req, res) => {
   }
 };
 
+export const getScheduleById = async (req, res) => {
+  try {
+    const scheduleId = req.params.id;
+    const schedule = await Schedule.findById(scheduleId)
+      .populate(
+        "birthdayWishesName",
+        "firstName gender birthDate address city state phoneNumber email birthdayCallDate birthdayCallTime favoriteCharacter specialMessage uploadedPhoto"
+      )
+      .populate(
+        "voiceArtist",
+        "firstName gender birthDate address city state mobileNumber email moreInformation charactersForVoiceOver"
+      )
+      .populate(
+        "customer",
+        "firstName gender birthDate address city state mobileNumber email"
+      );
+
+    if (!schedule) {
+      return res.status(404).json({ message: "Schedule not found" });
+    }
+
+    // Find the associated sendWish details for the customer
+    const sendWishDetails = await SendWish.findOne({
+      wishCreatedBy: schedule.customer._id,
+    });
+
+    // Add sendWishDetails to the schedule object
+    if (sendWishDetails) {
+      schedule.sendWishDetails = sendWishDetails;
+    }
+
+    res.status(200).json(schedule);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 export const getAllSchedules = async (req, res) => {
   try {
     const schedules = await Schedule.find()
+      .populate("birthdayWishesName", "firstName lastName email")
       .populate("voiceArtist", "firstName lastName email")
       .populate("customer", "firstName lastName email");
-    res.status(200).json({ length: schedules.length, data: schedules });
+    res.status(200).json(schedules);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Server error" });
@@ -94,10 +137,29 @@ export const createNotification = async (req, res) => {
 export const getAllNotification = async (req, res) => {
   try {
     const notice = await Notification.find();
-    res.status(200).json({ length: notice.length, data: notice });
+    res.status(200).json(notice);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Server error" });
+  }
+};
+
+export const getNotificationById = async (req, res) => {
+  const notificationId = req.params.id;
+
+  try {
+    const notification = await Notification.findOne({
+      _id: notificationId,
+    });
+
+    if (!notification) {
+      return res.status(404).json({ msg: "Notification not found" });
+    }
+
+    res.json(notification);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ msg: "Server error" });
   }
 };
 
@@ -243,3 +305,67 @@ export const updateUser = async (req, res) => {
     }
   });
 };
+
+export const listCustomers = async (req, res) => {
+  try {
+    const customers = await User.find({ role: "customer" }).select("-password");
+    res.json(customers);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ msg: "Server error" });
+  }
+};
+
+// Controller function to get a customer by ID
+export const getCustomerById = async (req, res) => {
+  const customerId = req.params.id;
+
+  try {
+    const customer = await User.findOne({
+      _id: customerId,
+      role: "customer",
+    }).select("-password");
+
+    if (!customer) {
+      return res.status(404).json({ msg: "Customer not found" });
+    }
+
+    res.json(customer);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ msg: "Server error" });
+  }
+};
+
+export const listArtists = async (req, res) => {
+  try {
+    const artists = await User.find({ role: "artist" }).select("-password");
+    res.json(artists);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ msg: "Server error" });
+  }
+};
+
+// Controller function to get a customer by ID
+export const getArtistById = async (req, res) => {
+  const artistId = req.params.id;
+
+  try {
+    const artist = await User.findOne({
+      _id: artistId,
+      role: "artist",
+    }).select("-password");
+
+    if (!artist) {
+      return res.status(404).json({ msg: "Artist not found" });
+    }
+
+    res.json(artist);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ msg: "Server error" });
+  }
+};
+
+// Customer and artist List

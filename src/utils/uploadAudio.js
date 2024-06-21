@@ -29,7 +29,7 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-const upload = multer({ storage: storage, fileFilter: fileFilter }).array('voiceRecording', 5); // 'audios' is the field name for multiple files
+const upload = multer({ storage: storage, fileFilter: fileFilter }).array('voiceRecording', 100); // 'audios' is the field name for multiple files
 
 
 export default upload;

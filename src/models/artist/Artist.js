@@ -21,6 +21,7 @@ const characters = [
 const artistSchema = new mongoose.Schema({
   voiceRecording: [
     {
+      character: { type: String }, // Character associated with this voice recording
       display_name: { type: String, required: true },
       secure_url: { type: String, required: true },
     },

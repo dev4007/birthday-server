@@ -25,7 +25,7 @@ export const Register = async (req, res) => {
     try {
       const { role, ...userData } = req.body;
 
-      const { email, password, confirmPassword, voiceRecording } = userData;
+      const { email, password, confirmPassword } = userData;
       // Check if passwords match
       if (password !== confirmPassword) {
         return res.status(400).json({ msg: "Passwords do not match" });
@@ -69,15 +69,27 @@ export const Register = async (req, res) => {
           if (!audioResponses || audioResponses.length === 0) {
             return res.status(500).json({ msg: "Error uploading audio files" });
           }
+          // Ensure charactersForVoiceOver and voiceRecording are indexed properly
+          const charactersForVoiceOver = userData.charactersForVoiceOver;
+
+          // Check if number of charactersForVoiceOver matches number of audio responses
+          if (charactersForVoiceOver.length !== audioResponses.length) {
+            return res.status(400).json({
+              msg: "Number of charactersForVoiceOver must match number of uploaded voice recordings",
+            });
+          }
+
+          const voiceRecording = audioResponses.map((response, index) => ({
+            character: charactersForVoiceOver[index] || "", // Ensure character is defined
+            display_name: response.display_name || "", // Ensure display_name is defined
+            secure_url: response.secure_url || "", // Ensure secure_url is defined
+          }));
 
           newUser = new Artist({
             ...userData,
             role: role,
             password: hashedPassword,
-            voiceRecording: audioResponses.map((response) => ({
-              display_name: response.display_name,
-              secure_url: response.secure_url,
-            })),
+            voiceRecording: voiceRecording,
           });
           break;
         case "customer":
@@ -92,12 +104,10 @@ export const Register = async (req, res) => {
       }
 
       await newUser.save();
-      res
-        .status(201)
-        .json({
-          msg: `${newUser.role} registered successfully`,
-          data: newUser,
-        });
+      res.status(201).json({
+        msg: `${newUser.role} registered successfully`,
+        data: newUser,
+      });
     } catch (error) {
       console.error({ error });
       res.status(500).json({ msg: "Server error" });
@@ -114,10 +124,12 @@ export const Login = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-      // Check if user is suspended
-      if (user.suspended) {
-        return res.status(403).json({ msg: "Your account is suspended. Please contact support for assistance." });
-      }
+    // Check if user is suspended
+    if (user.suspended) {
+      return res.status(403).json({
+        msg: "Your account is suspended. Please contact support for assistance.",
+      });
+    }
     // Check if password matches
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {

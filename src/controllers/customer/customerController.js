@@ -2,6 +2,7 @@ import Schedule from "../../models/admin/Schedule.js";
 import Customer from "../../models/customer/Customer.js";
 import Notification from "../../models/admin/Notification.js";
 import SendWish from "../../models/customer/SendWishes.js";
+import User from "../../models/auth/authModel.js";
 
 
 export const getAllCustomer = async (req, res) => {
@@ -58,7 +59,7 @@ export const sendWish = async (req, res) => {
     firstName,
     lastName,
     gender,
-    dateOfBirth,
+    birthDate,
     state,
     address,
     phoneNumber,
@@ -71,12 +72,23 @@ export const sendWish = async (req, res) => {
 
   const uploadedPhoto = req.file ? req.file.path : null; // Assuming multer uploads the file and provides its path
 
+  const customerId = req.user.id; // Assuming the role is stored in req.user.role
+
+  const findCustomer = await Customer.findById(customerId);
+  // console.log("🚀 ~ sendWish ~ findCustomer:", findCustomer)
+  if (!findCustomer) {
+    return res
+      .status(403)
+      .json({ message: "Invalid Customer" });
+  }
+
+
   try {
     const newWish = new SendWish({
       firstName,
       lastName,
       gender,
-      dateOfBirth,
+      birthDate,
       state,
       address,
       phoneNumber,
@@ -86,6 +98,8 @@ export const sendWish = async (req, res) => {
       favoriteCharacter,
       specialMessage,
       uploadedPhoto,
+      wishCreatedBy : findCustomer.id
+
     });
 
     await newWish.save();

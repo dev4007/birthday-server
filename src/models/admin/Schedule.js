@@ -1,7 +1,11 @@
 import mongoose from "mongoose";
 
 const scheduleSchema = new mongoose.Schema({
-  birthdayWishesName: { type: String, required: true },
+  birthdayWishesName: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'SendWish',
+    required: true
+  },
   voiceArtist: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Artist',

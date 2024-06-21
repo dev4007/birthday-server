@@ -13,7 +13,7 @@ export const inviteFriend = async (req, res) => {
     const findRole = await User.findById(userRole);
 
     // Check if the user role is 'customer' or 'artist'
-    if (findRole.role !== "customer" && findRole.role !== "artist") {
+    if (findRole.role !== "admin" && findRole.role !== "customer" && findRole.role !== "artist") {
       return res
         .status(403)
         .json({ message: "Unauthorized to invite friends" });
@@ -57,7 +57,7 @@ export const sendBulkInvitations = async (req, res) => {
     const userRole = req.user.id; // Assuming the role is stored in req.user.role
 
     const findRole = await User.findById(userRole);
-    if (findRole.role !== "customer" && findRole.role !== "artist") {
+    if (findRole.role !== "admin" ,findRole.role !== "customer" && findRole.role !== "artist") {
       return res
         .status(403)
         .json({ message: "Unauthorized to invite friends" });

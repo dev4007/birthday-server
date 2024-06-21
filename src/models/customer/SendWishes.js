@@ -16,8 +16,8 @@ const characters = [
 const sendWishSchema = new mongoose.Schema({
   firstName: { type: String, required: true },
   lastName: { type: String, required: true },
-  gender: { type: String, enum: ["male", "female"], required: true },
-  dateOfBirth: { type: Date, required: true },
+  gender: { type: String, enum: ["Male", "Female"], required: true },
+  birthDate: { type: Date, required: true },
   state: { type: String, required: true },
   address: { type: String, required: true },
   phoneNumber: { type: String, required: true },
@@ -27,6 +27,11 @@ const sendWishSchema = new mongoose.Schema({
   favoriteCharacter: [{ type: String, enum: characters, required: true }],
   specialMessage: { type: String },
   uploadedPhoto: { type: String }, // Assuming you store the URL of the uploaded photo
+  wishCreatedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Customer", // Reference to the User model for who invited this friend
+    required: true,
+  },
 });
 
 const SendWish = mongoose.model("SendWish", sendWishSchema);

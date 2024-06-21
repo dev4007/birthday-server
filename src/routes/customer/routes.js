@@ -8,7 +8,7 @@ import authMiddleware from './../../middleware/authMiddleware.js';
 const router = express.Router();
 
 //wishes
-router.post("/create-wish",fileUpload.single('uploadedPhoto') , sendWish);
+router.post("/create-wish",authMiddleware,fileUpload.single('uploadedPhoto') , sendWish);
 router.get("/get-wish" , getWishes);
 router.get("/get-customer" , getAllCustomer);
 router.get("/schedule-list/:id", ScheduleList);
